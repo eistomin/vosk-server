@@ -9,6 +9,14 @@ RUN mkdir /opt/vosk-model-ru \
    && rm -rf model/extra \
    && rm -rf model/rnnlm \
    && rm -rf vosk-model-ru-${RUVERSION}.zip
+   
+ENV SPKVERSION 0.3
+RUN mkdir /opt/spk-model \
+   && cd /opt/spk-model \
+   && wget -q http://alphacephei.com/kaldi/models/vosk-model-spk-${SPKVERSION}.zip \
+   && unzip vosk-model-spk-${SPKVERSION}.zip \
+   && mv vosk-model-spk-${SPKVERSION} model \
+   && rm -rf vosk-model-spk-${SPKVERSION}.zip
 
 EXPOSE 2700
 WORKDIR /opt/vosk-server/websocket
