@@ -8,7 +8,7 @@ import pathlib
 import websockets
 import concurrent.futures
 import logging
-from vosk import Model, KaldiRecognizer
+from vosk import Model, KaldiRecognizer, SpkModel
 
 # Uncomment for better memory usage
 #
@@ -24,6 +24,7 @@ from vosk import Model, KaldiRecognizer
 vosk_interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
 vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
 vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
+spk_model_path = os.environ.get('VOSK_SPK_PATH', '/opt/spk-model/model')
 
 if len(sys.argv) > 1:
    vosk_model_path = sys.argv[1]
@@ -37,6 +38,7 @@ if len(sys.argv) > 1:
 # pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
 
 model = Model(vosk_model_path)
+spk_model = SpkModel(spk_model_path)
 pool = concurrent.futures.ThreadPoolExecutor()
 loop = asyncio.get_event_loop()
 
@@ -70,9 +72,9 @@ async def recognize(websocket, path):
         # Create the recognizer, word list is temporary disabled since not every model supports it
         if not rec:
             if False and word_list:
-                 rec = KaldiRecognizer(model, sample_rate, word_list)
+                 rec = KaldiRecognizer(model, spk_model, sample_rate, word_list)
             else:
-                 rec = KaldiRecognizer(model, sample_rate)
+                 rec = KaldiRecognizer(model, spk_model, sample_rate)
 
         response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
         await websocket.send(response)
